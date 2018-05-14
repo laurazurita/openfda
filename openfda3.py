@@ -1,8 +1,7 @@
-
 import socket
 
 IP = "127.0.0.1"
-PORT = 9008
+PORT = 9006
 MAX_OPEN_REQUESTS = 5
 
 import http.client
@@ -13,15 +12,9 @@ def process_client(clientsocket):
     # Read the request message. It comes from the socket
     # What are received are bytes. We will decode them into an UTF-8 string
     request_msg = clientsocket.recv(1024).decode("utf-8")
-
     request_msg = request_msg.replace("\r", "").split("\n")
-
     request_line = request_msg[0]
-
-
     request = request_line.split(" ")
-
-
     req_cmd = request[0]
     path = request[1]
 
@@ -43,8 +36,8 @@ def process_client(clientsocket):
     repos = json.loads(repos_raw)
 
     # let's try to write them down in an html file
-    f = open('carajo.html', 'w')
-    f.write('<html><head><h1>HELLO WAPI</h1><body style="background-color: red">')
+    f = open('labels.html', 'w')
+    f.write('<html><head><h1>DRUG LABEL LIST</h1><body style="background-color: green">')
     for i in range(len(repos['results'])):
         try:
             drug = repos['results'][i]["openfda"]["generic_name"][0]
@@ -58,18 +51,14 @@ def process_client(clientsocket):
 
     # Read the html page to send, depending on the path
     if path == "/":
-        filename = "search3.html"
+        filename = "labels.html"
     else:
-        if path == "/lasdroga":
-            filename = "carajo.html"
-        else:
-            filename = "cipolla.html"
+        filename = "error.html"
 
     print("File to send: {}".format(filename))
 
     with open(filename, "r") as g:
         content = g.read()
-
 
     # -- Everything is OK
     status_line = "HTTP/1.1 200 OK\n"
@@ -86,13 +75,10 @@ def process_client(clientsocket):
 # Create the server cocket, for receiving the connections
 serversocket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 
-
 try:
 
     serversocket.bind((IP, PORT))
-
     serversocket.listen(MAX_OPEN_REQUESTS)
-
 
     while True:
 

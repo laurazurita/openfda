@@ -5,8 +5,7 @@ import json
 
 # -- IP and the port of the server
 IP = "localhost"  # Localhost means "I": your local machine
-PORT = 9007
-
+PORT = 9008
 
 # HTTPRequestHandler class
 class testHTTPRequestHandler(http.server.BaseHTTPRequestHandler):
@@ -53,7 +52,6 @@ class testHTTPRequestHandler(http.server.BaseHTTPRequestHandler):
         return
 
 
-
 Handler = testHTTPRequestHandler
 
 httpd = socketserver.TCPServer((IP, PORT), Handler)
@@ -66,26 +64,6 @@ except KeyboardInterrupt:
 httpd.server_close()
 print("")
 print("Server stopped!")
-
-
-
-
-# HTTPRequestHandler class
-class testHTTPRequestHandler(http.server.BaseHTTPRequestHandler):
-
-    def do_GET(self):
-
-        self.send_response(200)
-        # Send headers
-        self.send_header('Content-type', 'text/html')
-        self.end_headers()
-
-        with open("htmlopenfda3.html", "r") as f:
-             message= f.read()
-        self.wfile.write(bytes(message, "utf8"))
-        print("File served!")
-        return
-
 
 Handler = testHTTPRequestHandler
 
