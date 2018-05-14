@@ -49,11 +49,8 @@ def process_client(clientsocket):
             continue
     f.close()
 
-    # Read the html page to send, depending on the path
-    if path == "/":
-        filename = "labels.html"
-    else:
-        filename = "error.html"
+    filename = "labels.html"
+
 
     print("File to send: {}".format(filename))
 
