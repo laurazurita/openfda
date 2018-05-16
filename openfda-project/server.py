@@ -118,9 +118,9 @@ class OpenFDAClient():
         res_raw = r1.read().decode("utf-8")
         conn.close()
 
-        result = json.loads(res_raw)
-        if 'results' in result:
-            items = result['results']
+        res = json.loads(res_raw)
+        if 'results' in res:
+            items = res['results']
         else:
             items = []
         return items
