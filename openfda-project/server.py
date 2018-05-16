@@ -143,8 +143,8 @@ class OpenFDAClient():
         query = 'search=openfda.manufacturer_name:"%s"' % compname
         if limit:
             query += "&limit=" + str(limit)
-        drugs = self.send_query(query)
-        return drugs
+        info = self.send_query(query)
+        return info
 
 
 class OpenFDAParser():
@@ -161,18 +161,18 @@ class OpenFDAParser():
             list.append(comp['id'])
         return list
 
-    def parse_drugs(self, drugs):
+    def parse_drugs(self, info):
         # We create an empty list of the labels of the drugs:
-        drugs_labels = []
+        list = []
 
-        for drug in drugs:
+        for drug in info:
             label = drug['id']
             if 'active_ingredient' in drug:
                 label += " " + drug['active_ingredient'][0]
             if 'openfda' in drug and 'manufacturer_name' in drug['openfda']:
                 label += " " + drug['openfda']['manufacturer_name'][0]
-            drugs_labels.append(label)
-        return drugs_labels
+            list.append(label)
+        return list
 
     def parse_warnings(self, info):
         # We extract a warnings list:
