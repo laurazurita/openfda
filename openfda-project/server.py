@@ -48,24 +48,24 @@ class testHTTPRequestHandler(http.server.BaseHTTPRequestHandler):
             items = client.listDrug(limit)
             resp = html.listhtml(parser.parsecomps(items))
         elif 'searchDrug' in path:
-            active_ingredient = None
+            act_ing = None
             limit = 10
-            parameters = path.split("?")[1].split("&")
-            for param in parameters:
-                param_name = param.split("=")[0]
-                param_value = param.split("=")[1]
-                if param_name == 'active_ingredient':
-                    active_ingredient = param_value
-                elif param_name == 'limit':
-                    limit = param_value
-            items = client.searchDrug(active_ingredient, limit)
+            params = path.split("?")[1].split("&")
+            for param in params:
+                name = param.split("=")[0]
+                value = param.split("=")[1]
+                if name == 'active_ingredient':
+                    act_ing = value
+                elif name == 'limit':
+                    limit = value
+            items = client.searchDrug(act_ing, limit)
             resp = html.listhtml(parser.parse_drugs(items))
         elif 'listDrugs' in path:
             limit = None
             if len(path.split("?")) > 1:
                 limit = path.split("?")[1].split("=")[1]
-            items = client.listDrug(limit)
-            resp = html.listhtml(parser.parse_drugs(items))
+            itms = client.listDrug(limit)
+            resp = html.listhtml(parser.parse_drugs(itms))
         elif 'listWarnings' in path:
             limit = None
             if len(path.split("?")) > 1:
@@ -97,9 +97,9 @@ class OpenFDAHTML():
 
     # If not found, it should give back an error, and for that, we use a specific html file the not_found.html
     def get_not_found_page(self):
-        with open("not_found.html") as html_file:
-            html = html_file.read()
-        return html
+        with open("not_found.html") as file:
+            file = file.read()
+        return file
 class OpenFDAClient():
 
     def send_query(self, query):
@@ -174,15 +174,15 @@ class OpenFDAParser():
             drugs_labels.append(label)
         return drugs_labels
 
-    def parse_warnings(self, drugs):
+    def parse_warnings(self, info):
         # We extract a warnings list:
-        warnings = []
-        for drug in drugs:
-            if 'warnings' in drug and drug['warnings']:
-                warnings.append(drug['warnings'][0])
+        list = []
+        for warn in info:
+            if 'warnings' in warn and warn['warnings']:
+                list.append(warn['warnings'][0])
             else:
-                warnings.append("None")
-        return warnings
+                list.append("None")
+        return list
 
 
 Handler = testHTTPRequestHandler
