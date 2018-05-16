@@ -1,4 +1,3 @@
-
 import http.server
 import json
 import socketserver
@@ -28,12 +27,6 @@ class testHTTPRequestHandler(http.server.BaseHTTPRequestHandler):
             with open("html_openfda.html") as file:
                 frm = file.read()
                 resp = frm
-        elif 'listCompanies' in path:
-            limit = None
-            if len(path.split("?")) > 1:
-                limit = path.split("?")[1].split("=")[1]
-            itms = client.listDrug(limit)
-            resp = html.listhtml(parser.parsecomps(itms))
 
         elif 'searchCompany' in path:
             compname = None
@@ -48,37 +41,42 @@ class testHTTPRequestHandler(http.server.BaseHTTPRequestHandler):
                     limit = value
             itms = client.searchCompany(compname, limit)
             resp = html.listhtml(parser.parsecomps(itms))
-
+        elif 'listCompanies' in path:
+            limit = None
+            if len(path.split("?")) > 1:
+                limit = path.split("?")[1].split("=")[1]
+            items = client.listDrug(limit)
+            resp = html.listhtml(parser.parsecomps(items))
         elif 'searchDrug' in path:
-            act_ing = None
+            active_ingredient = None
             limit = 10
             parameters = path.split("?")[1].split("&")
-            for parameter in parameters:
-                name = parameter.split("=")[0]
-                value = parameter.split("=")[1]
-                if name == 'active_ingredient':
-                    act_ing = value
-                elif name == 'limit':
-                    limit = value
-            itms = client.searchDrug(act_ing, limit)
-            resp = html.listhtml(parser.parse_drugs(itms))
+            for param in parameters:
+                param_name = param.split("=")[0]
+                param_value = param.split("=")[1]
+                if param_name == 'active_ingredient':
+                    active_ingredient = param_value
+                elif param_name == 'limit':
+                    limit = param_value
+            items = client.searchDrug(active_ingredient, limit)
+            resp = html.listhtml(parser.parse_drugs(items))
         elif 'listDrugs' in path:
             limit = None
             if len(path.split("?")) > 1:
                 limit = path.split("?")[1].split("=")[1]
-            itms = client.listDrug(limit)
-            resp = html.listhtml(parser.parse_drugs(itms))
+            items = client.listDrug(limit)
+            resp = html.listhtml(parser.parse_drugs(items))
         elif 'listWarnings' in path:
             limit = None
             if len(path.split("?")) > 1:
                 limit = path.split("?")[1].split("=")[1]
-            itms = client.listDrug(limit)
-            resp = html.listhtml(parser.parse_warnings(itms))
+            items = client.listDrug(limit)
+            resp = html.listhtml(parser.parse_warnings(items))
         else:
             code = 404
             if not OPENFDA_BASIC:
                 url_found = False
-                resp = html.notfound()
+                resp = html.get_not_found_page()
 
         self.send_response(code)
 
@@ -89,7 +87,7 @@ class testHTTPRequestHandler(http.server.BaseHTTPRequestHandler):
         return
 
 class OpenFDAHTML():
-    # We create here a list in the html page with the info, using a loop
+
     def listhtml(self, things):
         list = "<ul>"
         for thing in things:
@@ -98,14 +96,14 @@ class OpenFDAHTML():
         return list
 
     # If not found, it should give back an error, and for that, we use a specific html file the not_found.html
-    def notfound(self):
-        with open("not_found.html") as file:
-            file = file.read()
-        return file
+    def get_not_found_page(self):
+        with open("not_found.html") as html_file:
+            html = html_file.read()
+        return html
 class OpenFDAClient():
 
-    def sendquery(self, query):
-
+    def send_query(self, query):
+        # We request an information ("query") to the openfda API, it will return the result of the query in JSON format.
         headers = {'User-Agent': 'http-client'}
         conn = http.client.HTTPSConnection("api.fda.gov")
         # Get a  drug label from the URL and extract the id, the purpose of the drug and the manufacturer_name.
@@ -129,13 +127,15 @@ class OpenFDAClient():
 
     def searchDrug(self, active_ingredient, limit=10):
         # We request the drugs so the client looks up for it
-        query = "search=active_ingredient:%s&limit=%s" % (active_ingredient, limit)
-        info = self.send_query(query)
-        return info
+        query = 'search=active_ingredient:"%s"' % active_ingredient
+        if limit:
+            query += "&limit=" + str(limit)
+        drugs = self.send_query(query)
+        return drugs
 
     def listDrug(self, limit=10):
         query = "limit=" + str(limit)
-        drugs = self.sendquery(query)
+        drugs = self.send_query(query)
         return drugs
 
     def searchCompany(self, compname, limit=10):
@@ -143,17 +143,17 @@ class OpenFDAClient():
         query = 'search=openfda.manufacturer_name:"%s"' % compname
         if limit:
             query += "&limit=" + str(limit)
-        drugs = self.sendquery(query)
+        drugs = self.send_query(query)
         return drugs
 
 
 class OpenFDAParser():
 
-    def parsecomps(self, comps):
+    def parsecomps(self, info):
 
         # We create an empty list of the companies
         list = []
-        for comp in comps:
+        for comp in info:
             if 'openfda' in comp and 'manufacturer_name' in comp['openfda']:
                 list.append(comp['openfda']['manufacturer_name'][0])
             else:
@@ -163,7 +163,7 @@ class OpenFDAParser():
 
     def parse_drugs(self, drugs):
         # We create an empty list of the labels of the drugs:
-        list = []
+        drugs_labels = []
 
         for drug in drugs:
             label = drug['id']
@@ -171,18 +171,18 @@ class OpenFDAParser():
                 label += " " + drug['active_ingredient'][0]
             if 'openfda' in drug and 'manufacturer_name' in drug['openfda']:
                 label += " " + drug['openfda']['manufacturer_name'][0]
-            list.append(label)
-        return list
+            drugs_labels.append(label)
+        return drugs_labels
 
-    def parse_warnings(self, warns):
+    def parse_warnings(self, drugs):
         # We extract a warnings list:
-        list = []
-        for warn in warns:
-            if 'warnings' in warn and warn['warnings']:
-                list.append(warn['warnings'][0])
+        warnings = []
+        for drug in drugs:
+            if 'warnings' in drug and drug['warnings']:
+                warnings.append(drug['warnings'][0])
             else:
-                list.append("None")
-        return list
+                warnings.append("None")
+        return warnings
 
 
 Handler = testHTTPRequestHandler
