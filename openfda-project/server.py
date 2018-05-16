@@ -149,21 +149,21 @@ class OpenFDAClient():
 
 class OpenFDAParser():
 
-    def parsecomps(self, drugs):
+    def parsecomps(self, comps):
 
         # We create an empty list of the companies
-        companies = []
-        for drug in drugs:
-            if 'openfda' in drug and 'manufacturer_name' in drug['openfda']:
-                companies.append(drug['openfda']['manufacturer_name'][0])
+        list = []
+        for comp in comps:
+            if 'openfda' in comp and 'manufacturer_name' in comp['openfda']:
+                list.append(comp['openfda']['manufacturer_name'][0])
             else:
-                companies.append("Unknown")
-            companies.append(drug['id'])
-        return companies
+                list.append("Unknown")
+            list.append(comp['id'])
+        return list
 
     def parse_drugs(self, drugs):
         # We create an empty list of the labels of the drugs:
-        drugs_labels = []
+        list = []
 
         for drug in drugs:
             label = drug['id']
@@ -171,18 +171,18 @@ class OpenFDAParser():
                 label += " " + drug['active_ingredient'][0]
             if 'openfda' in drug and 'manufacturer_name' in drug['openfda']:
                 label += " " + drug['openfda']['manufacturer_name'][0]
-            drugs_labels.append(label)
-        return drugs_labels
+            list.append(label)
+        return list
 
-    def parse_warnings(self, drugs):
+    def parse_warnings(self, warns):
         # We extract a warnings list:
-        warnings = []
-        for drug in drugs:
-            if 'warnings' in drug and drug['warnings']:
-                warnings.append(drug['warnings'][0])
+        list = []
+        for warn in warns:
+            if 'warnings' in warn and warn['warnings']:
+                list.append(warn['warnings'][0])
             else:
-                warnings.append("None")
-        return warnings
+                list.append("None")
+        return list
 
 
 Handler = testHTTPRequestHandler
