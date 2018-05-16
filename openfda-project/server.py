@@ -58,20 +58,20 @@ class testHTTPRequestHandler(http.server.BaseHTTPRequestHandler):
                     act_ing = value
                 elif name == 'limit':
                     limit = value
-            items = client.searchDrug(act_ing, limit)
-            resp = html.listhtml(parser.parse_drugs(items))
+            things = client.searchDrug(act_ing, limit)
+            resp = html.listhtml(parser.parse_drugs(things))
         elif 'listDrugs' in path:
             limit = None
             if len(path.split("?")) > 1:
                 limit = path.split("?")[1].split("=")[1]
-            itms = client.listDrug(limit)
-            resp = html.listhtml(parser.parse_drugs(itms))
+            things = client.listDrug(limit)
+            resp = html.listhtml(parser.parse_drugs(things))
         elif 'listWarnings' in path:
             limit = None
             if len(path.split("?")) > 1:
                 limit = path.split("?")[1].split("=")[1]
-            items = client.listDrug(limit)
-            resp = html.listhtml(parser.parse_warnings(items))
+            things = client.listDrug(limit)
+            resp = html.listhtml(parser.parse_warnings(things))
         else:
             code = 404
             if not OPENFDA_BASIC:
