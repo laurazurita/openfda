@@ -24,7 +24,7 @@ class testHTTPRequestHandler(http.server.BaseHTTPRequestHandler):
 
         if path == "/":
             # Return the HTML form for searching
-            with open("html_openfda.html") as file:
+            with open("openfda.html") as file:
                 frm = file.read()
                 resp = frm
 
